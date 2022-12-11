@@ -1,0 +1,43 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo
+spec:
+  selector:
+    matchLabels:
+      app: tempo
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: tempo
+    spec:
+      containers:
+      - name: tempo
+        image: grafana/tempo:latest
+        args:
+          - -config.file=/etc/tempo/tempo.yaml
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 3200
+          name: tempo
+        - containerPort: 14268
+          name: jaeger
+        volumeMounts:
+        - name: data
+          mountPath: /var/lib/tempo
+        - name: config
+          mountPath: /etc/tempo/tempo.yaml
+          subPath: tempo.yaml
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: tempo
+      - name: config
+        secret:
+          secretName: tempo-config

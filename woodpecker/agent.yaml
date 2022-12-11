@@ -1,0 +1,54 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: woodpecker-agent
+  namespace: tools
+  labels:
+    app: woodpecker-agent
+spec:
+  selector:
+    matchLabels:
+      app: woodpecker-agent
+  replicas: 1
+  template:
+    metadata:
+      annotations:
+      labels:
+        app: woodpecker-agent
+    spec:
+      containers:
+      - name: agent
+        image: woodpeckerci/woodpecker-agent:latest
+        imagePullPolicy: Always
+        envFrom:
+        - configMapRef:
+            name: woodpecker-agent-env
+        ports:
+        - name: http
+          containerPort: 3000
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 2
+            memory: 2Gi
+        volumeMounts:
+        - name: sock-dir
+          mountPath: /var/run
+      - name: dind
+        image: "docker:20.10.17-dind"
+        env:
+        - name: DOCKER_DRIVER
+          value: overlay2
+        resources:
+          limits:
+            cpu: 1
+            memory: 2Gi
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: sock-dir
+          mountPath: /var/run
+      volumes:
+      - name: sock-dir
+        emptyDir: {}

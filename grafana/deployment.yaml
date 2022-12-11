@@ -1,0 +1,54 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+  labels:
+    app: grafana
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      securityContext:
+        runAsUser: 472
+        runAsGroup: 472
+        fsGroup: 472
+      containers:
+      - name: grafana
+        image: grafana/grafana-oss:9.1.7
+        imagePullPolicy: Always
+        envFrom:
+        - configMapRef:
+            name: grafana-env
+        - secretRef:
+            name: grafana-env
+        ports:
+        - containerPort: 3000
+          name: http
+        volumeMounts:
+        - name: data
+          mountPath: /var/lib/grafana
+        - name: dashboards
+          mountPath: /etc/grafana/provisioning.d/dashboards
+        - name: datasources
+          mountPath: /etc/grafana/provisioning.d/datasources
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: grafana
+      - name: dashboards
+        configMap:
+          name: grafana-dashboards
+          optional: true
+      - name: datasources
+        configMap:
+          name: grafana-datasources
+          optional: true

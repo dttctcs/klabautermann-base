@@ -1,0 +1,9 @@
+ 
+resources:
+- prometheus.yaml
+#- alertmanager.yaml
+#- karma.yaml
+
+
+generatorOptions:
+  disableNameSuffixHash: true

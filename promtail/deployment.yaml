@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: promtail
+  labels:
+    app: promtail
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: promtail
+  template:
+    metadata:
+      annotations:
+        prometheus.io/path: /promtail/metrics
+        prometheus.io/port: "3101"
+        prometheus.io/scrape: "true"
+      labels:
+        app: promtail
+    spec:
+      containers:
+      - name: promtail
+        image: grafana/promtail:1.5.0
+        imagePullPolicy: Always
+        #command:
+        #- "cat"
+        #- "/etc/promtail/..data/promtail.yaml"
+        #- "#"
+        args: 
+        - "-config.file=/etc/promtail/promtail.yaml"
+        #- "-config.file=/etc/promtail/docker-config.yaml"
+        #env:
+        #- name: GF_SERVER_ROOT_URL
+        #  value: "https://scheller.es/promtail"
+        #- name: GF_SECURITY_ADMIN_PASSWORD
+        #  value: "XtQR&RVHkv[tm3BYL6t"
+        #- name: GF_LOG_LEVEL
+        #  value: "warn"
+        #- name: GF_PANELS_ENABLE_ALPHA
+        #  value: "true"
+        volumeMounts:
+        - name: varlog
+          mountPath: /var/log
+        - name: config
+          mountPath: /etc/promtail
+        ports:
+        - containerPort: 3101
+          name: http
+      serviceAccountName: promtail
+      volumes:
+      - name: varlog
+        hostPath:
+          path: /var/log
+      - name: config
+        configMap: 
+          name: promtail-config

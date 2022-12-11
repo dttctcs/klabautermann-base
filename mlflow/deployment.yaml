@@ -1,0 +1,47 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mlflow
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: mlflow
+  template:
+    metadata:
+      labels:
+        app: mlflow
+    spec:
+      containers:
+      - name: mlflow
+        image: python:3.7-slim-buster
+        command:
+        - bash
+        - "-c"
+        - "pip install mlflow boto3 pymysql && mlflow server --host 0.0.0.0 --serve-artifacts --backend-store-uri mysql+pymysql://${MYSQL_USER}:${MYSQL_PASSWORD}@mariadb:3306/${MYSQL_DATABASE} --default-artifact-root s3://mlflow/artifacts --artifacts-destination s3://mlflow/artifacts"
+        envFrom:
+        #- configMapRef:
+        #    name: mlflow-env
+        - secretRef:
+            name: mlflow-env
+        resources:
+          limits:
+            memory: "1Gi"
+            cpu: "4"
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+        ports:
+        - name: http
+          containerPort: 5000
+          protocol: TCP
+#        volumeMounts:
+#        - name: data
+#          mountPath: /var/lib/mlflow
+#      volumes:
+#      - name: data
+#        persistentVolumeClaim:
+#          claimName: mlflow

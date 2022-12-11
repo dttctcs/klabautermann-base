@@ -1,0 +1,55 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dtrack-apiserver
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: dtrack-apiserver
+  template:
+    metadata:
+      labels:
+        app: dtrack-apiserver
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        fsGroupChangePolicy: "OnRootMismatch"
+      containers:
+      - name: dtrack-apiserver
+        image: dependencytrack/apiserver:4.5.0
+        envFrom:
+        - configMapRef:
+            name: dtrack-apiserver-env
+        - secretRef:
+            name: dtrack-apiserver-env
+        resources:
+          limits:
+            memory: "16Gi"
+          requests:
+            memory: "16Gi"
+        ports:
+        - name: http
+          containerPort: 8081
+          protocol: TCP
+        volumeMounts:
+        - name: data
+          mountPath: /data
+        securityContext:
+          privileged: false
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - "ALL"
+          seccompProfile:
+            type: RuntimeDefault
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: dtrack-apiserver

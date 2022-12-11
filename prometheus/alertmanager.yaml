@@ -1,0 +1,158 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: alertmanager
+  name: alertmanager
+spec:
+  selector:
+    matchLabels:
+      app: alertmanager
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: alertmanager
+    spec:
+      serviceAccountName: alertmanager
+      containers:
+        - name: alertmanager
+          image: "prom/alertmanager:v0.21.0"
+          imagePullPolicy: "IfNotPresent"
+          env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.podIP
+          args:
+            - --config.file=/etc/config/alertmanager.yaml
+            - --storage.path=/data
+            - --cluster.advertise-address=$(POD_IP):6783
+            - --web.external-url=$(WEB_EXTERNAL_URL)
+          envFrom:
+            - configMapRef:
+                name: alertmanager-env
+          ports:
+            - containerPort: 9093
+          readinessProbe:
+            httpGet:
+              path: /-/ready
+              port: 9093
+            initialDelaySeconds: 30
+            timeoutSeconds: 30
+          resources:  {}
+          volumeMounts:
+            - name: config-volume
+              mountPath: /etc/config
+            - name: storage-volume
+              mountPath: "/data"
+              subPath: ""
+        - name: prometheus-alertmanager-configmap-reload
+          image: "jimmidyson/configmap-reload:v0.4.0"
+          imagePullPolicy: "IfNotPresent"
+          args:
+            - --volume-dir=/etc/config
+            - --webhook-url=$(WEB_HOOK_URL)
+          envFrom:
+            - configMapRef:
+                name: alertmanager-env
+          resources:
+            {}
+          volumeMounts:
+            - name: config-volume
+              mountPath: /etc/config
+              readOnly: true
+          readinessProbe:
+            httpGet:
+              path: /monitoring/alertmanager/-/ready
+              port: 9093
+            initialDelaySeconds: 30
+            timeoutSeconds: 30
+            failureThreshold: 3
+            successThreshold: 1
+          livenessProbe:
+            httpGet:
+              path: /monitoring/alertmanager/-/healthy
+              port: 9093
+            initialDelaySeconds: 30
+            timeoutSeconds: 30
+            failureThreshold: 3
+            successThreshold: 1              
+      securityContext:
+        fsGroup: 65534
+        runAsGroup: 65534
+        runAsNonRoot: true
+        runAsUser: 65534
+      volumes:
+        - name: config-volume
+          configMap:
+            name: alertmanager-config
+        - name: storage-volume
+          persistentVolumeClaim:
+            claimName: alertmanager
+---
+# Source: prometheus/templates/persistentvolumeclaims/alertmanager.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    app: alertmanager
+  name: alertmanager
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: "2Gi"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app: alertmanager
+  name: alertmanager
+rules:
+  []
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    app: alertmanager
+  name: alertmanager
+subjects:
+  - kind: ServiceAccount
+    name: alertmanager
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: alertmanager
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: alertmanager
+  name: alertmanager
+  annotations:
+    {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: alertmanager
+  name: alertmanager
+spec:
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: 9093
+  selector:
+    app: alertmanager
+  sessionAffinity: None
+  type: "ClusterIP"
+---

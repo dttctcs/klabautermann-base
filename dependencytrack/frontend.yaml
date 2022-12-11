@@ -1,0 +1,26 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dtrack-frontend
+spec:
+  selector:
+    matchLabels:
+      app: dtrack-frontend
+  template:
+    metadata:
+      labels:
+        app: dtrack-frontend
+    spec:
+      containers:
+      - name: dtrack-frontend
+        image: dependencytrack/frontend:4.5.1
+        envFrom:
+        - configMapRef:
+            name: dtrack-frontend-env
+        - secretRef:
+            name: dtrack-frontend-env
+        ports:
+        - name: http
+          containerPort: 8080
+          protocol: TCP

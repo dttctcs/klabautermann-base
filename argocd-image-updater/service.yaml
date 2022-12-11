@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: traefik
+  name: traefik
+spec:
+  ports:
+  - name: web
+    port: 80
+    protocol: TCP
+    targetPort: web
+  - name: websecure
+    port: 443
+    protocol: TCP
+    targetPort: websecure
+  - name: metrics
+    port: 8082
+    protocol: TCP
+    targetPort: metrics
+  selector:
+    app: traefik
+  sessionAffinity: None
+  type: ClusterIP

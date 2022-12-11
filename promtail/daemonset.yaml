@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: promtail
+  labels:
+    app: promtail
+spec:
+  selector:
+    matchLabels:
+      app: promtail
+  template:
+    metadata:
+      annotations:
+        prometheus.io/path: /metrics
+        prometheus.io/port: "3101"
+        prometheus.io/scrape: "true"
+      labels:
+        app: promtail
+    spec:
+      containers:
+      - name: promtail
+        image: grafana/promtail:1.6.0
+        imagePullPolicy: Always
+        env:
+        - name: HOSTNAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        #command:
+        #- "cat"
+        #- "/etc/promtail/..data/promtail.yaml"
+        #- "#"
+        args: 
+        - "-config.file=/etc/promtail/promtail.yaml"
+        - "--client.external-labels=promtail=$(HOSTNAME)"
+        #- "-config.file=/etc/promtail/docker-config.yaml"
+        volumeMounts:
+        - name: machine-id
+          mountPath: /etc/machine-id
+          readOnly: true
+        - name: varlog
+          mountPath: /var/log
+        - name: config
+          mountPath: /etc/promtail
+        - name: run
+          mountPath: /run/promtail
+        - name: runlog
+          mountPath: /run/log
+        ports:
+        - containerPort: 3101
+          name: http
+      serviceAccount: promtail
+      serviceAccountName: promtail
+      volumes:
+      - name: varlog
+        hostPath:
+          path: /var/log
+      - name: config
+        configMap: 
+          name: promtail-config
+      - name: machine-id
+        hostPath:
+          path: /etc/machine-id
+          type: File
+      - name: run
+        hostPath:
+          path: /run/promtail
+      - name: runlog
+        hostPath:
+          path: /run/log
