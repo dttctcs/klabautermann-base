@@ -11,11 +11,7 @@ spec:
       securityContext:
         fsGroup: 65534
         fsGroupChangePolicy: "OnRootMismatch"    
-      containers:
-      - name: rahla          
-        volumeMounts:
-        - name: rahla-deploy
-          mountPath: "/deploy/"
+      containers:      
       - image: docker.io/datatactics/theia:latest
         name: theia
         env:
