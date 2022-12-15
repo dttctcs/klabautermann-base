@@ -33,15 +33,16 @@ spec:
             httpGet:
               path: /healthy
               port: 8181
-            initialDelaySeconds: 60
+            initialDelaySeconds: 15
+            periodSeconds: 15
             timeoutSeconds: 30
-            failureThreshold: 3
+            failureThreshold: 6
             successThreshold: 1
         livenessProbe:
           httpGet:
             path: /healthy
             port: 8181
-          initialDelaySeconds: 65
+          initialDelaySeconds: 180
           timeoutSeconds: 30
           failureThreshold: 3
           successThreshold: 1
