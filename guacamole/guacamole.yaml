@@ -26,32 +26,24 @@ spec:
             value: "4822"
           - name: GUACAMOLE_HOME
             value: "/etc/guacamole/"  
-
         envFrom:
         - configMapRef:
             name: guacamole-env            
         ports:
         - name: http
-          containerPort: 8080
-        volumeMounts:
-        - name: guacamole-conf
-          mountPath: /etc/guacamole/          
-#        livenessProbe:
-#          httpGet:
-#            path: /guacamole/
-#            port: 8080
-#          initialDelaySeconds: 45
-#          timeoutSeconds: 10
-#        readinessProbe:
-#          httpGet:
-#            path: /guacamole/
-#            port: 8080
-#          initialDelaySeconds: 2
-#          timeoutSeconds: 10
-      volumes:
-        - name: guacamole-conf 
-          configMap:
-            name: guacamole-conf  
+          containerPort: 8080       
+        livenessProbe:
+          httpGet:
+            path: /guacamole/
+            port: 8080
+          initialDelaySeconds: 45
+          timeoutSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /guacamole/
+            port: 8080
+          initialDelaySeconds: 2
+          timeoutSeconds: 10
 ---
 apiVersion: apps/v1
 kind: Deployment
