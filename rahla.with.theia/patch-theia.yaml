@@ -4,8 +4,6 @@ kind: Deployment
 metadata:
   name: rahla
 spec:
-  strategy:
-    type: Recreate
   template:
     spec:
       securityContext:
