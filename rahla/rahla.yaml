@@ -17,7 +17,7 @@ spec:
       annotations:
         prometheus.io/path: /metrics
         prometheus.io/port: "8181"
-        prometheus.io/scrape: "true"
+        prome theus.io/scrape: "true"
     spec:
       containers:
       - name: rahla
@@ -71,6 +71,7 @@ spec:
         - name: osgi
           containerPort: 8181
           protocol: TCP
+        volumeMounts:          
         - name: data-cache
           mountPath: "/rahla/data"
       volumes:
@@ -99,4 +100,3 @@ spec:
   selector:
     app: rahla
   type: ClusterIP
----
