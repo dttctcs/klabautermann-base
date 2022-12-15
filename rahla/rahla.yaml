@@ -71,13 +71,6 @@ spec:
         - name: osgi
           containerPort: 8181
           protocol: TCP
-        volumeMounts:
-        - name: config-volume
-          mountPath: "/rahla/deploy/features.xml"
-          subPath: features.xml
-        - name: config-volume
-          mountPath: "/rahla/etc/org.apache.aries.jax.rs.whiteboard.default.cfg"
-          subPath: org.apache.aries.jax.rs.whiteboard.default.cfg
         - name: data-cache
           mountPath: "/rahla/data"
       volumes:
@@ -106,19 +99,4 @@ spec:
   selector:
     app: rahla
   type: ClusterIP
----
-apiVersion: v1
-data:
-  features.xml: |
-    <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-    <features xmlns="http://karaf.apache.org/xmlns/features/v1.6.0" name="runtime">
-        <feature name="autoinstall" version="0" install="auto">
-        </feature>
-    </features>
-  org.apache.aries.jax.rs.whiteboard.default.cfg: |
-    default.web=false
-    application.base.prefix=/
-kind: ConfigMap
-metadata:
-  name: config-volume
 ---
