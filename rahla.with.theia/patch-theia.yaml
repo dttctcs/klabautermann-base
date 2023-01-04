@@ -10,7 +10,7 @@ spec:
         fsGroup: 65534
         fsGroupChangePolicy: "OnRootMismatch"    
       containers:      
-      - image: docker.io/datatactics/theia:latest
+      - image: datatactics/theia:latest
         name: theia
         env:
         - name: PROJECTDIR
