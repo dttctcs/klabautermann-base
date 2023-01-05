@@ -21,7 +21,7 @@ spec:
           protocol: TCP                
         securityContext:        
           readOnlyRootFilesystem: true
-          runAsNonRoot: true          
+          #runAsNonRoot: true          
 ---
 apiVersion: v1
 kind: Service
