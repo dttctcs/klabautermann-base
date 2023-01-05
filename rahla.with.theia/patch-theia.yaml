@@ -9,8 +9,6 @@ spec:
       securityContext:
         fsGroup: 65534
         fsGroupChangePolicy: "OnRootMismatch"    
-        readOnlyRootFilesystem: true
-        runAsNonRoot: true
       containers:      
       - image: datatactics/theia:latest
         name: theia
