@@ -21,6 +21,9 @@ spec:
         - name: http
           containerPort: 3000
           protocol: TCP                
+        securityContext:        
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true          
 ---
 apiVersion: v1
 kind: Service
