@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: s3www
-        image: y4m4/s3www:v0.6.0
+        image: y4m4/s3www:v0.7.0
         resources:
           limits:
             memory: "128Mi"
