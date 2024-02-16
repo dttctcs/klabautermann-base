@@ -27,7 +27,7 @@ spec:
         - dex
         - serve
         - /etc/dex/dex.yaml
-        image: ghcr.io/dexidp/dex:v2.35.1
+        image: ghcr.io/dexidp/dex:v2.36.0
         imagePullPolicy: IfNotPresent
         name: dex
         ports:

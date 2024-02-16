@@ -18,7 +18,7 @@ spec:
         prometheus.io/port: "8082"
     spec:
       containers:
-      - image: traefik:2.9.5
+      - image: traefik:2.9.9
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3
@@ -43,9 +43,6 @@ spec:
           protocol: TCP
         - containerPort: 8082
           name: metrics
-          protocol: TCP
-        - containerPort: 9051
-          name: minio
           protocol: TCP
         readinessProbe:
           failureThreshold: 1

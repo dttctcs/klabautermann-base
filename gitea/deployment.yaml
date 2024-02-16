@@ -1,3 +1,4 @@
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -21,11 +22,8 @@ spec:
     spec:
       containers:
       - name: gitea
-#        image: scheller.es:5443/amiga23/gitea-aarch64:1.11.6
-        image: gitea/gitea:1.17.2
+        image: gitea/gitea:1.19.3
         imagePullPolicy: IfNotPresent
-#        command: ["/bin/sh"]
-#        args: ["-c", "while true; do echo hello; sleep 999;done"]
         ports:
         - containerPort: 3000
           name: http
@@ -34,7 +32,12 @@ spec:
         volumeMounts:
         - name: data
           mountPath: /data
+        - name: lfs
+          mountPath: /data/gitea/lfs
       volumes:
       - name: data
         persistentVolumeClaim:
-          claimName: gitea
+          claimName: gitea-data
+      - name: lfs
+        persistentVolumeClaim:
+          claimName: gitea-lfs

@@ -1,0 +1,105 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: trivy-server
+  namespace: trivy-system
+  labels:
+    app: trivy-server
+spec:
+  type: ClusterIP
+  selector:
+    app: trivy-server
+  ports:
+  - name: trivy-http
+    protocol: TCP
+    port: 4954
+    targetPort: 4954
+  sessionAffinity: ClientIP
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: trivy-server
+  namespace: trivy-system
+  labels:
+    app: trivy-server
+spec:
+  podManagementPolicy: "Parallel"
+  serviceName: trivy-server
+  replicas: 1
+  selector:
+    matchLabels:
+      app: trivy-server
+  template:
+    metadata:
+      labels:
+        app: trivy-server
+    spec:
+      serviceAccountName: trivy-operator
+      automountServiceAccountToken: false
+      securityContext:
+        fsGroup: 65534
+        runAsNonRoot: true
+        runAsUser: 65534
+      containers:
+      - name: main
+        image: ghcr.io/aquasecurity/trivy:0.39.0
+        imagePullPolicy: "IfNotPresent"
+        securityContext:
+          privileged: false
+          readOnlyRootFilesystem: true
+        args:
+        - server
+        envFrom:
+        - configMapRef:
+            name: trivy-operator-trivy-config
+        - secretRef:
+            name: trivy-operator-trivy-config
+        ports:
+        - name: trivy-http
+          containerPort: 4954
+        livenessProbe:
+          httpGet:
+            scheme: HTTP
+            path: /healthz
+            port: trivy-http
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          successThreshold: 1
+          failureThreshold: 10
+        readinessProbe:
+          httpGet:
+            scheme: HTTP
+            path: /healthz
+            port: trivy-http
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          successThreshold: 1
+          failureThreshold: 3
+        volumeMounts:
+        - mountPath: /tmp
+          name: tmp-data
+          readOnly: false
+        - mountPath: /home/scanner/.cache
+          name: data
+          readOnly: false
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100M
+          limits:
+            cpu: 500m
+            memory: 500M
+      volumes:
+      - name: tmp-data
+        emptyDir: {}
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      resources:
+        requests:
+          storage: 5Gi
+      accessModes:
+      - ReadWriteOnce
